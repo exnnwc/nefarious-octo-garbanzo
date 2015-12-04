@@ -107,7 +107,6 @@ function CreateNote(table, id, note){
         });
 }
 function CreateNewTrait(profile_id, trait_id, trait_type, trait_value){
-    //document.write(profile_id + " " + trait_id + " " + trait_type + " " + trait_value);
     $.ajax({
         method:"POST",
         url:"traits/traits.php",
@@ -123,6 +122,22 @@ function CreateNewTrait(profile_id, trait_id, trait_type, trait_value){
         });
 }
 
+function CreateVehicle(id, make, model, year, color, license, state){
+//    document.write (id + " " + make + " " + model + " " + year + " " + color + " " + license + " " + state);
+    $.ajax({
+        method:"POST",
+        url:"vehicles.php",
+        data:{function_to_be_called:"create_vehicle", profile_id:id, make:make, model:model, year:year, color:color, license:license, state:state}
+    })
+        .done(function (result){
+            if (result.substr(0,1)=="0"){
+                $('#error').html(result);
+            } else {
+                ReloadProfile();
+            }
+        });
+
+} 
 function DeleteAlias(alias_id){
             $.ajax({
             method:"POST",
@@ -155,8 +170,8 @@ function DeleteTrait(id){
         if (confirm("Are you sure you want to delete this entry?")){
         $.ajax({
             method:"POST",
-            url:"traits.php",
-            data:{function_to_be_called:"delete", id:id}
+            url:"traits/traits.php",
+            data:{function_to_be_called:"delete_trait", id:id}
         })
             .done(function(result){
                 if (result.substr(0,1) =="0"){   

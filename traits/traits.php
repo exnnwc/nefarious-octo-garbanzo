@@ -1,6 +1,7 @@
 <?php
-
+//echo "0 ";
 $connection = new PDO ("mysql:host=localhost;dbname=peeps", "root", "");
+
 switch ($_POST["function_to_be_called"]){
     case "create":
         create_type(trim($_POST['new_trait']));
@@ -9,9 +10,10 @@ switch ($_POST["function_to_be_called"]){
         display_all();
         break;
     case "delete":
+        echo "YO";
         delete ($_POST['type']);
         break;
-    case "delete trait":
+    case "delete_trait":
         delete_trait($_POST['id']);
         break;
     case "change_rank":

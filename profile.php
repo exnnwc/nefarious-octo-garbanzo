@@ -17,7 +17,9 @@ function load_profile($id, $hide_empty_headers){
 
               </div>
           </div>";
+    
     if (display_names($id, fetch_aliases($id))){
+        display_vehicles($id, $hide_empty_headers);
         display_traits($id, $hide_empty_headers);
         display_note_section($id, $hide_empty_headers);
     }
@@ -95,7 +97,7 @@ function display_notes($table, $id, $hidden){
             echo "<input type='button' value='-' 
                     onclick=\"$('#show_note".$note->id."').show(); $('#note".$note->id."').hide(); \" />";
         } 
-        echo "<span style='font-size:12px;'>#$note->id"
+        echo "<span style='font-size:12px;'>#$note->id "
                     .date("m/d/y h:i", strtotime($note->created))
                 ."</span><span>"
         .create_note_menu($note->id)
@@ -124,18 +126,16 @@ function display_traits($profile_id, $hide_empty_headers){
           .$profile_id." and value is not null order by created desc");
             $old_trait=false;
             while ($trait=$statement2->fetchObject()){
-                echo "<div";
+                echo "<div><span";
                 if ($old_trait){
                     echo " class='old'";
                 } else {
                     $old_trait=true;
                 }
                 echo ">
-                          $trait->value 
-                          <input id='show_traits_note_form".$trait->id."' type='button' value='?'  
-                            onclick=\"$('#show_traits_note_form".$trait->id."').hide(); 
-                              $('#traits_note_form".$trait->id."').show(); \" />
-                      </div>".                     
+                          $trait->value</span><span style='margin-left:10px'>". 
+                      create_trait_menu($trait->id)
+                     ."</span></div>".                     
                 create_note_form("traits", $trait->id) ;
                 $statement3=$connection
                   ->query("select count(*) from notes where active=1 and owner_table='traits' and owner_id=$trait->id");
@@ -145,6 +145,21 @@ function display_traits($profile_id, $hide_empty_headers){
                 }               
             }
         }
+    }
+}
+
+function display_vehicles($profile_id, $hide_empty_headers){
+    global $connection;
+    $query="select count(*) from vehicles where active=1 and owner=$profile_id";
+    echo $query;
+    $num_of_vehicles=$connection->query($query)->fetchColumn();
+    if (!$hide_empty_headers || ($hide_empty_headers && $num_of_vehicles>0)){
+        echo "<div class='profile_header'>
+                  Vehicles 
+                  <input id='show_vehicle_form$profile_id' type='button' value='+' 
+                    onclick=\"$('#vehicle_form$profile_id').show(); $('#show_vehicle_form$profile_id').hide();\" />
+              </div>"
+              .create_vehicle_form($profile_id);
     }
 }
 
@@ -181,6 +196,11 @@ function create_trait_form($profile_id, $trait){
             </span>";
 }
 
+function create_trait_menu($id){
+    return "<input type='button' value='X' onclick=\"DeleteTrait(".$id.");\" />
+            <input id='show_traits_note_form".$id."' type='button' value='?'  
+              onclick=\"$('#show_traits_note_form".$id."').hide();$('#traits_note_form".$id."').show(); \" />";
+}
 function create_note_form($table, $id){
 
     return "
@@ -198,4 +218,29 @@ function create_note_form($table, $id){
 
 function create_note_menu($id){
     return "<input type='button' value='X' onclick=\"DeleteNote($id); \" />";
+}
+function create_vehicle_form($id){
+    return "<div id='vehicle_form$id' style='display:none'>
+            <input type='button' value='-' onclick=\"$('#vehicle_form$id').hide(); $('#show_vehicle_form$id').show();\" />
+            <div>
+            <label for='veh_make$id'>Make:</label>
+            <input id='veh_make$id' type='text' maxlength='64' />
+            <label for='veh_model$id'>Model:</label>
+            <input id='veh_model$id' type='text' maxlength='64' />
+            </div><div>
+            <label for='veh_year$id'>Year:</label>
+            <input id='veh_year$id' type='text' maxlength='8' />
+            <label for='veh_color$id'>Color:</label>
+            <input id='veh_color$id' type='text' maxlength='32' />
+            </div><div>
+            <label for='veh_lp$id'>LP#:</label>
+            <input id='veh_lp$id' type='text' maxlength='8' />
+            <label for='veh_state$id'>State:</label>
+            <input id='veh_state$id' type='text' maxlength='2' />
+            </div>
+            <input type='button' value='Create Vehicle' 
+              onclick=\"CreateVehicle($id, $('#veh_make$id').val(), $('#veh_model$id').val(),$('#veh_year$id').val(), 
+                $('#veh_color$id').val(), $('#veh_lp$id').val(), $('#veh_state$id').val());\" /></div>";
+
+
 }
