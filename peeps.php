@@ -13,7 +13,9 @@ switch ($function){
     case "list_people":
         list_people();
         break;
-
+    case "search":
+        search($_POST['search_string']);
+        break;
 }
 
 
@@ -50,5 +52,15 @@ function list_people(){
                 onclick=\"window.location.assign('http://".$_SERVER['SERVER_NAME']."/peeps/?id=$person->id')\">#$person->id<br />
         $name_of_person</div>";
         
+    }
+}
+
+function search($search_str){
+    global $dbh;
+    $statement=$dbh->prepare("select * from aliases where active=1 and name like ?");
+    $statement->bindValue(1, $search_str, PDO::PARAM_STR);
+    $statement->execute();
+    while ($result=$statement->fetchObject()){
+        echo $result->name;
     }
 }

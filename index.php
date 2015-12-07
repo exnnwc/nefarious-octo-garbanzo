@@ -182,6 +182,21 @@ function DeleteTrait(id){
             });
     }
 }
+function DeleteVehicle(id){
+
+    $.ajax({
+        method:"POST",
+        url:"vehicles.php",
+        data:{function_to_be_called:"delete", id:id}
+    })
+        .done(function (result){
+                if (result.substr(0,1) =="0"){   
+                    $('#error').html(result);
+                } else {
+                    ReloadProfile();
+                }
+        });
+}
 function ListPeople(){
     $.ajax({
         method:"POST",
@@ -211,6 +226,17 @@ function LoadProfile (profile_id){
 function ReloadProfile (){
     LoadProfile($('#profile_id').html());
 }
+
+function SearchAliases(str){
+    $.ajax({
+        method:"POST",
+        url:"peeps.php",
+        data:{function_called:"search", search_string:str}
+    })
+        .done (function (result) {
+            $("#list_of_people").html(result);
+        });
+}
 </script>
 </head>
 
@@ -222,10 +248,18 @@ if (!isset($_GET['id'])){
 
 
 if($_GET['id']==0):?>
+
 <body onload="ListPeople()">
+<input type='text' onkeyup="SearchAliases(this.value)"/>
 <div id='list_of_people' style='float:left'></div>
-<input id='new_person_button' class='new_person right' style='' type='button' value='New Person'
-    onclick="CreateNewPerson();"/> 
+<div style="float:right;text-align:center;" >
+    <div>
+        <a href="traits/" style="clear:both"> Traits</a>
+    </div><div>
+        <input id='new_person_button' class='new_person right' style='clear:both' type='button' value='New Person'
+          onclick="CreateNewPerson();"/>
+    </div>
+</div>
 <?php elseif($_GET['id']>0):?>
 <body onload="LoadProfile(<?php echo $_GET['id']; ?>)">
 <div id='error'></div>

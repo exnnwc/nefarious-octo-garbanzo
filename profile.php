@@ -19,7 +19,7 @@ function load_profile($id, $hide_empty_headers){
           </div>";
     
     if (display_names($id, fetch_aliases($id))){
-        display_vehicles($id, $hide_empty_headers);
+        display_vehicle_section($id, $hide_empty_headers);
         display_traits($id, $hide_empty_headers);
         display_note_section($id, $hide_empty_headers);
     }
@@ -148,21 +148,36 @@ function display_traits($profile_id, $hide_empty_headers){
     }
 }
 
-function display_vehicles($profile_id, $hide_empty_headers){
+function display_vehicle_section($profile_id, $hide_empty_headers){
     global $connection;
     $query="select count(*) from vehicles where active=1 and owner=$profile_id";
-    echo $query;
+
     $num_of_vehicles=$connection->query($query)->fetchColumn();
     if (!$hide_empty_headers || ($hide_empty_headers && $num_of_vehicles>0)){
         echo "<div class='profile_header'>
                   Vehicles 
                   <input id='show_vehicle_form$profile_id' type='button' value='+' 
                     onclick=\"$('#vehicle_form$profile_id').show(); $('#show_vehicle_form$profile_id').hide();\" />
-              </div>"
-              .create_vehicle_form($profile_id);
+              </div>";
+        if ($num_of_vehicles>0){
+            display_vehicles($profile_id);
+        }
     }
 }
 
+function display_vehicles($profile_id){
+    global $connection;
+    $statement=$connection->query("select * from vehicles where active=1 and owner=$profile_id");
+    while ($vehicle=$statement->fetchObject()){
+        echo "<div>
+                  $vehicle->color $vehicle->year $vehicle->make $vehicle->model $vehicle->license_origin LP#$vehicle->license"
+                  . create_vehicle_menu($vehicle->id)
+            ."</div>"
+            .create_note_form("vehicles", $vehicle->id);
+        display_notes("vehicles", $vehicle->id, true);
+        
+    }
+}
 function fetch_aliases($profile_id){
     global $connection;
     $statement=$connection->prepare ("select id, name from aliases where owner=? and active=1 order by rank asc");
@@ -241,6 +256,10 @@ function create_vehicle_form($id){
             <input type='button' value='Create Vehicle' 
               onclick=\"CreateVehicle($id, $('#veh_make$id').val(), $('#veh_model$id').val(),$('#veh_year$id').val(), 
                 $('#veh_color$id').val(), $('#veh_lp$id').val(), $('#veh_state$id').val());\" /></div>";
+}
 
-
+function create_vehicle_menu($id){
+    return "<input type='button' value='X' onclick=\"DeleteVehicle($id)\" />
+            <input id='show_vehicles_note_form".$id."' type='button' value='?'
+              onclick=\"$('#show_vehicles_note_form".$id."').hide();$('#vehicles_note_form".$id."').show(); \" />";
 }

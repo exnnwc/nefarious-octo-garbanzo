@@ -12,7 +12,7 @@ switch ($_POST['function_to_be_called']){
 }
 
 function create($profile_id, $make, $model, $year, $color, $license, $state){
-    echo "0 $profile_id $make $model $year $color $license $state <BR>";
+
     global $connection;
     $statement=$connection->prepare ("insert into vehicles (owner, make, model, year, color, license, license_origin) values 
         (?, ?, ?, ?, ? , ?, ?)");
@@ -27,6 +27,7 @@ function create($profile_id, $make, $model, $year, $color, $license, $state){
 }
 
 function delete($id){
+    global $connection;
     $statement=$connection->prepare("update vehicles set active=0 where id=?");
     $statement->bindValue(1, $id, PDO::PARAM_INT);
     $statement->execute();
