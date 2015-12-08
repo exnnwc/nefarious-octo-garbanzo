@@ -82,7 +82,7 @@ function display_note_section($profile_id, $hide_empty_headers){
 }
 function display_notes($table, $id, $hidden){
     global $connection;
-    $statement=$connection->query("select * from notes where active=1 and owner_table='$table' and owner_id=$id");
+    $statement=$connection->query("select * from notes where active=1 and owner_table='$table' and owner_id=$id order by created desc");
     while ($note=$statement->fetchObject()){
         if ($hidden){
             echo "<input id='show_note".$note->id."' type='button' value='+' 
@@ -98,7 +98,7 @@ function display_notes($table, $id, $hidden){
                     onclick=\"$('#show_note".$note->id."').show(); $('#note".$note->id."').hide(); \" />";
         } 
         echo "<span style='font-size:12px;'>#$note->id "
-                    .date("m/d/y h:i", strtotime($note->created))
+                    .date("m/d/y l h:i", strtotime($note->created))
                 ."</span><span>"
         .create_note_menu($note->id)
                 ."</span><div style='margin:8px;'>
@@ -111,7 +111,7 @@ function display_traits($profile_id, $hide_empty_headers){
     global $connection;
 
 
-    $statement=$connection->query("select id, type from traits where active=1 and owner is null and value is null order by rank");
+    $statement=$connection->query("select id, type, discrete from traits where active=1 and owner is null and value is null order by rank");
     while ($trait_heading=$statement->fetchObject()){
         $query="select count(*) from traits where active=1 and type='".$trait_heading->type."' and owner="
           .$profile_id." and value is not null";
@@ -127,9 +127,9 @@ function display_traits($profile_id, $hide_empty_headers){
             $old_trait=false;
             while ($trait=$statement2->fetchObject()){
                 echo "<div><span";
-                if ($old_trait){
+                if (($trait->discrete && $trait->old)||($trait->discrete && $old_trait)){
                     echo " class='old'";
-                } else {
+                } else if($trait->discrete && !$old_trait){
                     $old_trait=true;
                 }
                 echo ">
@@ -203,10 +203,10 @@ function create_trait_form($profile_id, $trait){
                   onclick=\"$('#show_new_trait".$trait->id."').show();$('#new_trait_form".$trait->id."').hide();\" />
                 <input id='new_trait".$trait->id."' type='text' 
                   onkeypress=\"if (event.keyCode==13){
-                    CreateNewTrait(".$profile_id . ", ".$trait->id .", '".$trait->type ."', $(this).val());
+                    CreateNewTrait(".$profile_id . ", ".$trait->id .", '".$trait->type ."', $(this).val(), $trait->discrete);
                   }\"/> 
                 <input type='button' value='Create new trait' 
-                  onclick=\"CreateNewTrait(".$profile_id . ", ".$trait->id .", '".$trait->type ."', $('#new_trait".$trait->id."').val());\" />
+                  onclick=\"CreateNewTrait(".$profile_id . ", ".$trait->id .", '".$trait->type ."', $('#new_trait".$trait->id."').val(), $trait->discrete);\" />
               </span>
             </span>";
 }

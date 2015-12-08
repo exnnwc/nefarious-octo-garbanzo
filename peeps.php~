@@ -57,10 +57,15 @@ function list_people(){
 
 function search($search_str){
     global $dbh;
+    $search_str="%$search_str%";
     $statement=$dbh->prepare("select * from aliases where active=1 and name like ?");
-    $statement->bindValue(1, $search_string, PDO::PARAM_STR);
+    $statement->bindValue(1, $search_str, PDO::PARAM_STR);
     $statement->execute();
-    while ($result=$statement->fetchObject()){
-        echo $result->name;
+    while ($aliases=$statement->fetchObject()){
+        echo "<div class='profile_link_div' id='profile_link_div$aliases->owner'
+                style='cursor:pointer;'
+                onclick=\"window.location.assign('http://".$_SERVER['SERVER_NAME']."/peeps/?id=$aliases->owner')\">#$aliases->id<br />
+        $aliases->name</div>";
+        
     }
 }

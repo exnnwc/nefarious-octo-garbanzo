@@ -4,13 +4,13 @@ $connection = new PDO ("mysql:host=localhost;dbname=peeps", "root", "");
 
 switch ($_POST["function_to_be_called"]){
     case "create":
-        create_type(trim($_POST['new_trait']));
+        create_type(trim($_POST['new_trait']), (bool)$_POST['discrete']);
         break;
     case "list":
         display_all();
         break;
     case "delete":
-        echo "YO";
+
         delete ($_POST['type']);
         break;
     case "delete_trait":
@@ -20,7 +20,8 @@ switch ($_POST["function_to_be_called"]){
         change_rank($_POST['id'], $_POST['is_direction_up']);
         break;
     case "create_trait":
-        create_trait($_POST['profile_id'], $_POST['trait_id'], $_POST['trait_type'], $_POST['trait_value']);
+        create_trait($_POST['profile_id'], $_POST['trait_id'], $_POST['trait_type'], $_POST['trait_value'], 
+          $_POST['trait_discrete']);
         break;
 }
 
@@ -39,34 +40,38 @@ function change_rank($id, $is_direction_up){
     $connection->exec("update traits set rank=".$main_record->rank." where active=1 and rank=".$new_rank);
     $connection->exec("update traits set rank=".$new_rank." where id=".$main_record->id);
 }
-function create_trait($profile_id, $trait_id, $trait_type, $trait_value){
+function create_trait($profile_id, $trait_id, $trait_type, $trait_value, $trait_discrete){
     global $connection;
-    $statement=$connection->prepare("select count(*) from traits where type=? and value=?");
+    $statement=$connection->prepare("select count(*) from traits where active=1 and type=? and value=?");
     $statement->bindValue(1, $trait_type, PDO::PARAM_STR);
+
     $statement->bindValue(2, $trait_value, PDO::PARAM_STR);
     $statement->execute();
     if (!$statement->fetchColumn()){
         $rank=fetch_rank($trait_id);
-        $statement=$connection->prepare("insert into traits (owner, type, value, rank) values (?, ?, ?, ?)");
+        $statement=$connection->prepare("insert into traits (owner, type, value, rank, discrete) values (?, ?, ?, ?, ?)");
         $statement->bindValue(1, $profile_id, PDO::PARAM_INT);
         $statement->bindValue(2, $trait_type, PDO::PARAM_STR);
         $statement->bindValue(3, $trait_value, PDO::PARAM_STR);
         $statement->bindValue(4, $rank, PDO::PARAM_INT);
+        $statement->bindValue(5, $trait_discrete, PDO::PARAM_BOOL);
         $statement->execute();
     } else {
         echo "0 There is already a trait with that value registered for that person.";
     }
 }
 
-function create_type($trait){
+function create_type($trait, $discrete){
     global $connection;
-    $statement=$connection->prepare ("select count(*) from traits where type=?");
+
+    $statement=$connection->prepare ("select count(*) from traits where active=1 and type=?");
     $statement->bindValue(1, $trait, PDO::PARAM_STR);
     $statement->execute();
     $trait_name_exists=$statement->fetchColumn();
     if (!$trait_name_exists){
-        $statement=$connection->prepare("insert into traits(type, rank) values (?, ".fetch_next_rank().")");
+        $statement=$connection->prepare("insert into traits(type, rank, discrete) values (?, ".fetch_next_rank().", ?)");
         $statement->bindValue(1, $trait, PDO::PARAM_STR);
+        $statement->bindValue(2, $discrete, PDO::PARAM_BOOL);
         $statement->execute();
     } else {
         //Possibly extend this to similar traits using levenschtein() and there may be an issue with case sensitivity.

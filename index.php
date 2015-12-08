@@ -106,12 +106,12 @@ function CreateNote(table, id, note){
             }           
         });
 }
-function CreateNewTrait(profile_id, trait_id, trait_type, trait_value){
+function CreateNewTrait(profile_id, trait_id, trait_type, trait_value, trait_discrete){
     $.ajax({
         method:"POST",
         url:"traits/traits.php",
         data:{function_to_be_called:"create_trait", profile_id:profile_id, 
-          trait_id:trait_id, trait_type:trait_type, trait_value:trait_value}
+          trait_id:trait_id, trait_type:trait_type, trait_value:trait_value, trait_discrete:trait_discrete}
     })
         .done(function (result){
             if (result.substr(0,1) =="0"){   
@@ -244,14 +244,14 @@ function SearchAliases(str){
 
 if (!isset($_GET['id'])){
     $_GET['id']=0;
+} else {
+    $_GET['id']=(int)$_GET['id'];   
 }
 
-
 if($_GET['id']==0):?>
-
 <body onload="ListPeople()">
-<input type='text' onkeyup="SearchAliases(this.value)"/>
-<div id='list_of_people' style='float:left'></div>
+<input style='width:500px;height:50px;clear:both;float:left;margin-bottom:25px;' type='text' onkeyup="SearchAliases(this.value)"/>
+<div id='list_of_people' style='float:left;clear:both;'></div>
 <div style="float:right;text-align:center;" >
     <div>
         <a href="traits/" style="clear:both"> Traits</a>
@@ -265,6 +265,8 @@ if($_GET['id']==0):?>
 <div id='error'></div>
 <div id='profile_menu'>Hide empty traits?<input id='hide_empty_headers' type='checkbox' onclick="ReloadProfile()"/></div>
 <div id="profile_content"> </div>
+
+
 <?php endif;?>
 
 <div id="test">

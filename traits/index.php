@@ -4,10 +4,21 @@
 <script>
 
 function CreateTrait(trait){
+//    document.write($('#discrete_true').is(':checked') +
+    error=false;
+    if($('#discrete_true').is(':checked')){
+        discrete=false;
+    } else if ($('#discrete_false').is(':checked')){
+        discrete=true;
+    } else {
+        error=true;
+        $('#error').html("Please select if this is a discrete trait.");
+    }
+if (!error){
     $.ajax({
         method:"POST",
         url:"traits.php",
-        data:{function_to_be_called:"create", new_trait:trait}
+        data:{function_to_be_called:"create", new_trait:trait, discrete:discrete}
     })
         .done (function(result){
             if(result.substr(0,1)=="0"){
@@ -17,6 +28,7 @@ function CreateTrait(trait){
                 $("#new_trait").val('');
             }
         });
+}
 }
 function ListTraits(){
     $.ajax({
@@ -58,6 +70,10 @@ function ChangeRank(id, is_direction_up){
 </script>
 </head>
 <body onload="ListTraits()">
+<label for='discrete_true'>Discrete</label>
+<input id='discrete_true' name='discrete_trait' type='radio' /> 
+<label for='discrete_false'>Non-Discrete</label>
+<input id='discrete_false' name='discrete_trait' type='radio' /><br />
 <input id='new_trait' type='text' onkeypress="if(event.keyCode==13){CreateTrait(this.value);}" />
 <input type='button' value='Create' onclick="CreateTrait($('#new_trait').val())" />
 <div id='error'></div>
