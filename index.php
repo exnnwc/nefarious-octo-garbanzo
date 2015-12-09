@@ -75,7 +75,7 @@ function CreateNewPerson(){
         data: {function_called:"new_person"}
     }).
         done(function (result){
-                $('#test').html(result);
+                ListPeople();
         });
 }
 
